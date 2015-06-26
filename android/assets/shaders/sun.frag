@@ -8,23 +8,23 @@ varying vec2 vTexCoord;
 
 void main() {
 	// Screen coordinates
-	float y = float(int(vTexCoord.y*resolution.y));
-	float x = float(int(vTexCoord.x*resolution.x));
-	
+	float y = float(int(vTexCoord.y * resolution.y));
+	float x = float(int(vTexCoord.x * resolution.x));
+
 	// Distance of screen coordinates from center of sun
-	float dst_pos_sun = pow(x-pos_sun.x, 2) + pow(y-pos_sun.y, 2);
-	
+	float dst_pos_sun = pow(x - pos_sun.x, 2.0) + pow(y - pos_sun.y, 2.0);
+
 	// Radius of the sun
-	float bound_rad_sun = pow(radius_sun, 2);
-	
+	float bound_rad_sun = pow(radius_sun, 2.0);
+
 	// Radius of the corona
-	float rad_sun_corona = bound_rad_sun*2;
-	
+	float rad_sun_corona = bound_rad_sun * 2.0;
+
 	if (dst_pos_sun <= bound_rad_sun) {
 		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-		
+
 	} else if (dst_pos_sun <= rad_sun_corona) {
-		float alpha = 1 - (dst_pos_sun - bound_rad_sun)/(rad_sun_corona-bound_rad_sun);
+		float alpha = 1.0 - (dst_pos_sun - bound_rad_sun) / (rad_sun_corona - bound_rad_sun);
 		gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
 	}
 }
