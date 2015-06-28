@@ -12,7 +12,7 @@ public class DesktopLauncher {
 	public static void main(String[] arg) {
 
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
-		cfg.title = "MyGame";
+		cfg.title = "N-Body";
 		cfg.width = 1280;
 		cfg.height = 720;
 
