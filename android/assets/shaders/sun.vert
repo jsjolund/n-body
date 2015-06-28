@@ -12,6 +12,7 @@ varying vec2 vPosition;
 
 void main() {
 	//transform our 2D screen space position into 3D world space
+	
  	gl_Position = u_projTrans * a_position;
  	
  	vTexCoord = a_texCoord0;
