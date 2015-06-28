@@ -56,14 +56,12 @@ public class SimScreen implements Screen {
 				ModelInstance instance = body.getModelInstance();
 				instance.calculateBoundingBox(box).mul(instance.transform);
 				if (Intersector.intersectRayBoundsFast(ray, box)) {
-					camFocus = body.getPos();
+					camFocus = body.pos;
 				}
 			}
 			target.set(camFocus);
 			return true;
-
 		}
-
 	}
 
 	private Environment environment;
@@ -79,20 +77,106 @@ public class SimScreen implements Screen {
 	private SpriteBatch batch = new SpriteBatch();
 	private Texture bkgTex;
 	private ShaderProgram shaderSun;
-	
+
 	private Body sun;
 	private ModelInstance skyboxInstance;
 
 	private int maxNumBodies = 10;
 
-	private Array<ModelInstance> instancesEnv = new Array<ModelInstance>(maxNumBodies);
-	private Array<ModelInstance> instances = new Array<ModelInstance>(maxNumBodies);
+	private Array<ModelInstance> instancesEnv = new Array<ModelInstance>(
+			maxNumBodies);
+	private Array<ModelInstance> instances = new Array<ModelInstance>(
+			maxNumBodies);
 
 	private Array<Body> bodies = new Array<Body>(maxNumBodies);
 	private Array<Array<Vector3>> bodiesPosHist = new Array<Array<Vector3>>(
 			maxNumBodies);
 
 	private Vector3 camFocus;
+
+	private void createBodies() {
+		Body body;
+
+		body = new Body();
+		body.pos = new Vector3(0, 0, 0);
+		body.vel = new Vector3(0, 0, 0);
+		body.mass = 2E11f;
+		body.scl = 1;
+		body.setModel(assets.get("./planet_sun.g3db", Model.class));
+
+		sun = body;
+		bodies.add(body);
+		instances.add(body.getModelInstance());
+
+		body = new Body();
+		body.pos = new Vector3(-10, 10, 4);
+		body.vel = new Vector3(-0.3f, 0, -0.2f);
+		body.mass = 5E8f;
+		body.scl = 0.2f;
+		body.setModel(assets.get("./planet_ako.g3db", Model.class));
+
+		bodies.add(body);
+		instancesEnv.add(body.getModelInstance());
+
+		body = new Body();
+		body.pos = new Vector3(10, 7, 1);
+		body.vel = new Vector3(-0.3f, 0, -0.5f);
+		body.mass = 1E9f;
+		body.scl = 0.2f;
+		body.setModel(assets.get("./planet_dante.g3db", Model.class));
+
+		bodies.add(body);
+		instancesEnv.add(body.getModelInstance());
+
+		body = new Body();
+		body.pos = new Vector3(10.3f, 7, 1);
+		body.vel = new Vector3(-0.3f, 0, -0.7f);
+		body.mass = 1E7f;
+		body.scl = 0.04f;
+		body.setModel(assets.get("./planet_down.g3db", Model.class));
+
+		bodies.add(body);
+		instancesEnv.add(body.getModelInstance());
+
+		body = new Body();
+		body.pos = new Vector3(20, -7, 0.5f);
+		body.vel = new Vector3(-0.1f, 0, -0.4f);
+		body.mass = 1E8f;
+		body.scl = 0.5f;
+		body.setModel(assets.get("./planet_dust.g3db", Model.class));
+
+		bodies.add(body);
+		instancesEnv.add(body.getModelInstance());
+
+		body = new Body();
+		body.pos = new Vector3(4, 1, 1);
+		body.vel = new Vector3(-0.1f, 0, -0.7f);
+		body.mass = 1E7f;
+		body.scl = 0.1f;
+		body.setModel(assets.get("./planet_reststop.g3db", Model.class));
+
+		bodies.add(body);
+		instancesEnv.add(body.getModelInstance());
+
+		// Body position history
+		for (Body b : bodies) {
+			Array<Vector3> bodyPosHist = new Array<Vector3>();
+			bodyPosHist.add(new Vector3(b.pos));
+			bodiesPosHist.add(bodyPosHist);
+		}
+	}
+
+	private void loadAssets() {
+		assets = new AssetManager();
+		assets.load("./skybox.g3db", Model.class);
+		assets.load("./planet_sun.g3db", Model.class);
+		assets.load("./planet_ako.g3db", Model.class);
+		assets.load("./planet_dante.g3db", Model.class);
+		assets.load("./planet_down.g3db", Model.class);
+		assets.load("./planet_dust.g3db", Model.class);
+		assets.load("./planet_reststop.g3db", Model.class);
+		assets.finishLoading();
+	}
 
 	public SimScreen(Game game) {
 		environment = new Environment();
@@ -114,108 +198,22 @@ public class SimScreen implements Screen {
 
 		shapeRenderer = new ShapeRenderer();
 
-		assets = new AssetManager();
-		assets.load("./skybox.g3db", Model.class);
-		assets.load("./planet_sun.g3db", Model.class);
-		assets.load("./planet_ako.g3db", Model.class);
-		assets.load("./planet_dante.g3db", Model.class);
-		assets.load("./planet_down.g3db", Model.class);
-		assets.load("./planet_dust.g3db", Model.class);
-		assets.load("./planet_reststop.g3db", Model.class);
-		assets.finishLoading();
+		loadAssets();
 
 		skyboxInstance = new ModelInstance(assets.get("./skybox.g3db",
 				Model.class), new Vector3(0, 0, 0));
 		skyboxInstance.transform.scale(500, 500, 500);
 
-		Body body;
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(0, 0, 0);
-		body.vel = new Vector3(0, 0, 0);
-		body.mass = 2E11f;
-		body.scl = 1;
-		body.setModel(assets.get("./planet_sun.g3db", Model.class));
-
-		sun = body;
-		bodies.add(body);
-		instances.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(-10, 10, 4);
-		body.vel = new Vector3(-0.3f, 0, -0.2f);
-		body.mass = 5E8f;
-		body.scl = 0.2f;
-		body.setModel(assets.get("./planet_ako.g3db", Model.class));
-
-		bodies.add(body);
-		instancesEnv.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(10, 7, 1);
-		body.vel = new Vector3(-0.3f, 0, -0.5f);
-		body.mass = 1E9f;
-		body.scl = 0.2f;
-		body.setModel(assets.get("./planet_dante.g3db", Model.class));
-
-		bodies.add(body);
-		instancesEnv.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(10.4f, 7, 1);
-		body.vel = new Vector3(-0.3f, 0, -0.7f);
-		body.mass = 1E7f;
-		body.scl = 0.04f;
-		body.setModel(assets.get("./planet_down.g3db", Model.class));
-
-		bodies.add(body);
-		instancesEnv.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(20, -7, 0.5f);
-		body.vel = new Vector3(-0.1f, 0, -0.4f);
-		body.mass = 1E8f;
-		body.scl = 0.5f;
-		body.setModel(assets.get("./planet_dust.g3db", Model.class));
-
-		bodies.add(body);
-		instancesEnv.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		body = new Body();
-		body.pos = new Vector3(4, 1, 1);
-		body.vel = new Vector3(-0.1f, 0, -0.7f);
-		body.mass = 1E7f;
-		body.scl = 0.1f;
-		body.setModel(assets.get("./planet_reststop.g3db", Model.class));
-
-		bodies.add(body);
-		instancesEnv.add(body.getModelInstance());
-
-		// //////////////////////////////////////////////////////////////////
-
-		for (Body b : bodies) {
-			// Body position history
-			Array<Vector3> bodyPosHist = new Array<Vector3>();
-			bodyPosHist.add(new Vector3(b.getPos()));
-			bodiesPosHist.add(bodyPosHist);
-		}
+		createBodies();
 
 		camController = new MyInputProcessor(camera);
 		Gdx.input.setInputProcessor(camController);
-		camFocus = bodies.get(0).getPos();
+		camFocus = bodies.get(0).pos;
 
+		loadShaders();
+	}
+
+	private void loadShaders() {
 		String vert = Gdx.files.local("shaders/sun.vert").readString();
 		String frag = Gdx.files.local("shaders/sun.frag").readString();
 		shaderSun = new ShaderProgram(vert, frag);
@@ -230,7 +228,6 @@ public class SimScreen implements Screen {
 		bkgTex = new Texture(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
 				Format.RGBA8888);
 		batch = new SpriteBatch();
-
 	}
 
 	@Override
@@ -241,6 +238,9 @@ public class SimScreen implements Screen {
 		}
 		shapeRenderer.dispose();
 		shaderSun.dispose();
+		assets.dispose();
+		batch.dispose();
+		bkgTex.dispose();
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class SimScreen implements Screen {
 				a.applyForce(a.forceFrom(b), dt);
 			}
 			Array<Vector3> aHist = bodiesPosHist.get(i);
-			aHist.add(new Vector3(a.getPos()));
+			aHist.add(new Vector3(a.pos));
 
 			if (aHist.size > 2000) {
 				aHist.removeIndex(0);
@@ -293,7 +293,6 @@ public class SimScreen implements Screen {
 		camera.lookAt(camFocus);
 		camera.up.set(Vector3.Y);
 		camera.update();
-
 	}
 
 	private void renderBodies() {
@@ -314,11 +313,18 @@ public class SimScreen implements Screen {
 		modelBatch.end();
 	}
 
+	BoundingBox bb = new BoundingBox();
+	
 	private void renderSun() {
+
+		if (!camera.frustum.boundsInFrustum(sun.center, sun.dimensions)) {
+			return;
+		}
+
 		batch.begin();
 		shaderSun.begin();
 
-		Vector3 w_pos_sun = sun.getPos();
+		Vector3 w_pos_sun = sun.pos;
 		Vector3 s_pos_sun = camera.project(w_pos_sun.cpy());
 		s_pos_sun.y = Gdx.graphics.getHeight() - s_pos_sun.y;
 		shaderSun.setUniformf("pos_sun", s_pos_sun);
@@ -349,6 +355,7 @@ public class SimScreen implements Screen {
 		batch.end();
 	}
 
+	
 	private void renderTrail() {
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
